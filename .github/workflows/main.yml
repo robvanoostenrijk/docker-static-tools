@@ -9,6 +9,13 @@ jobs:
   build-container-and-deploy:
     runs-on: ubuntu-latest
     if: github.event_name == 'push'
+    strategy:
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm64
+          - linux/arm/v7
+          - linux/arm/v6
     steps:
       - name: Checkout from GitHub
         id: checkout
@@ -43,4 +50,4 @@ jobs:
           docker buildx build --push \
           --build-arg PREFIX=/tools \
           --tag $IMAGE_ID:$VERSION \
-          --platform linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6 .
+          --platform ${{ matrix.platform }} .
