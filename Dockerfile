@@ -333,34 +333,41 @@ cp git ${PREFIX}/usr/bin
 
 EOF
 
-COPY <<entrypoint.sh ${PREFIX}/
+COPY <<entrypoint.sh /scratchfs${PREFIX}/
 #!${PREFIX}/bin/sh
+
+set -e
 export PATH=${PREFIX}/bin:${PREFIX}/usr/bin:\$PATH
 
-if [ ! -z "\$1" ]; then
-	echo "[i] Populating into volume mapped directory \$1."
+if [ "\$1" == "volume" ]; then
+	echo "[i] Populating into volume mapped directory \$2."
 
-	if [ -d "\$1" ]; then
-		cp -rv entrypoint.sh bin etc usr \$1
+	if [ -d "\$2" ]; then
+		cp -rv ${PREFIX}/entrypoint.sh ${PREFIX}/bin ${PREFIX}/etc ${PREFIX}/usr \$2
+		echo "[i] Data copied and available in \$2."
 	else
-		echo "[!] Volume mapped directory $1 does not exist."
+		echo "[!] Volume mapped directory \$2 does not exist."
 	fi
 else
-	echo "[i] Executing shell environment."
-	exec ${PREFIX}/bin/sh
+	if [ \$# -eq 0 ]; then
+		exec ${PREFIX}/bin/sh
+	else
+		${PREFIX}/bin/sh -c "\${@}"
+	fi
 fi
 entrypoint.sh
 
 RUN <<EOF
-cd ${PREFIX}
-ln -s . ${PREFIX:1}
-chmod a+x ${PREFIX}/entrypoint.sh
+chmod a+x /scratchfs${PREFIX}/entrypoint.sh
+
+ln -s ${PREFIX}/entrypoint.sh /scratchfs/entrypoint.sh
+mv ${PREFIX}/* /scratchfs${PREFIX}
 
 EOF
 
 FROM scratch
 
-ARG PREFIX=/tools
+COPY --from=builder [ "/scratchfs/", "/" ]
 
-COPY --from=builder [ "${PREFIX}", "/" ]
+SHELL ["/entrypoint.sh"]
 ENTRYPOINT [ "/entrypoint.sh" ]
