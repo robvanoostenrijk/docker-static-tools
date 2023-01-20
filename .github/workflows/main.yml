@@ -46,6 +46,4 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           push: true
-          tags:
-            - $IMAGE_ID:latest
-            - $IMAGE_ID:$VERSION
+          tags: $IMAGE_ID:latest,$IMAGE_ID:$VERSION
