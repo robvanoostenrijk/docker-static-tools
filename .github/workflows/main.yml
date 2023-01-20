@@ -28,15 +28,12 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Determine Image ID and Version
-        id: image_id
+      - name: Determine Image Version
         run: |
-          IMAGE_ID=$(echo ghcr.io/${{ github.repository }} | tr '[A-Z]' '[a-z]')
           # Strip git ref prefix from version
           VERSION=$(echo "${{ github.ref }}" | sed -e 's,.*/\(.*\),\1,')
           # Strip "v" prefix from tag name
           [[ "${{ github.ref }}" == "refs/tags/"* ]] && VERSION=$(echo $VERSION | sed -e 's/^v//')
-          echo "IMAGE_ID=${IMAGE_ID}" >> $GITHUB_ENV
           echo "VERSION=${VERSION}" >> $GITHUB_ENV
       - name: Build and push
         uses: docker/build-push-action@v3
@@ -45,4 +42,4 @@ jobs:
           context: .
           platforms: ${{ matrix.platform }}
           push: true
-          tags: $IMAGE_ID:latest,$IMAGE_ID:$VERSION
+          tags: ghcr.io/${{ github.repository }}:latest,ghcr.io/${{ github.repository }}:${{ env.VERSION }}
