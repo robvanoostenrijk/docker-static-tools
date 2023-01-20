@@ -47,5 +47,6 @@ jobs:
           # Build and Publish container image
           docker buildx build --push \
           --build-arg PREFIX=/tools \
+          --tag latest \
           --tag $IMAGE_ID:$VERSION \
           --platform ${{ matrix.platform }} .
