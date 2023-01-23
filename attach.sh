@@ -3,7 +3,7 @@
 IMAGE_REF=ghcr.io/robvanoostenrijk/docker-static-tools:latest
 
 print_help () {
-	echo "[i] Usage: $0 container-name"
+	echo "[i] Usage: $0 container-name [local-container]"
 	exit
 }
 
@@ -15,6 +15,10 @@ if [[ -z "$1" ]]; then
 	print_help
 fi
 
+if ! [[ -z "$2" ]]; then
+	echo "[i] Using local image reference $2"
+	IMAGE_REF=$2
+fi
 
 CONTAINER=$(docker create ${IMAGE_REF})
 echo "[i] Created container ${CONTAINER:0:12}"
