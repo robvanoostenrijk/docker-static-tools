@@ -272,8 +272,7 @@ EOF
 RUN <<EOF
 set -x
 mkdir /usr/src/yq
-GOPATH=/usr/src/yq CGO_ENABLED=0 go install github.com/mikefarah/yq/v4@latest
-#strip /usr/src/yq/bin/yq
+GOPATH=/usr/src/yq CGO_ENABLED=0 go install -ldflags '-s -w' github.com/mikefarah/yq/v4@latest
 cp /usr/src/yq/bin/yq ${PREFIX}/usr/bin
 
 EOF
@@ -284,8 +283,7 @@ EOF
 RUN <<EOF
 set -x
 mkdir /usr/src/q
-GOPATH=/usr/src/q CGO_ENABLED=0 go install github.com/natesales/q@latest
-#strip /usr/src/q/bin/q
+GOPATH=/usr/src/q CGO_ENABLED=0 go install -ldflags '-s -w' github.com/natesales/q@latest
 cp /usr/src/q/bin/q ${PREFIX}/usr/bin
 
 EOF
@@ -338,6 +336,7 @@ COPY <<entrypoint.sh /scratchfs${PREFIX}/
 
 set -e
 export PATH=${PREFIX}/bin:${PREFIX}/usr/bin:\$PATH
+export XTERM=${PREFIX}/etc/terminfo/l/linux
 
 if [ "\$1" == "volume" ]; then
 	echo "[i] Populating into volume mapped directory \$2."
@@ -358,6 +357,9 @@ fi
 entrypoint.sh
 
 RUN <<EOF
+mkdir /scratchspace/
+find /etc/terminfo -type f -name "linux" -o -name "vt100" -o -name "xterm" | cpio -pdm /scratchfs
+
 chmod a+x /scratchfs${PREFIX}/entrypoint.sh
 
 ln -s ${PREFIX}/entrypoint.sh /scratchfs/entrypoint.sh
